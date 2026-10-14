@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>麦乐漫记 · 兜底版式（3:4）</title>
+<style>
+  /* ======================================================================
+   * v4「麦乐漫记」本地版式模板（3:4，逻辑尺寸 1080×1440，此处 0.5 缩放显示）
+   * 用途：云端图像生成不可用时的兜底出片（画面 = 风格化照片 + 牛皮纸纸带 +
+   *       手写体题字 + 右下角麦乐记字标 + 左下角日期）。
+   * 云端可用时不要用这份模板 —— 直接按 references/postcard-design.md 里的
+   * 「一次出整张」提示词交给图像生成，本模板仅留在失败路径。
+   *
+   * 排版常量来自 src/part4/lib/triptych.ts（PAD=44 / BAND_TOP=1440-320 /
+   * FOOTER_H=360 / 题字左起 PAD+20 / 日期左起 PAD+20 / logo 底边 1440-350）。
+   * 交付高清：整体 ×2 即 1080×1440 原尺寸。
+   * ====================================================================== */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    display: flex; align-items: center; justify-content: center;
+    background: #EFE6D4; padding: 24px; min-height: 100vh;
+    font-family: "PingFang SC", "Hiragino Sans GB", system-ui, sans-serif;
+  }
+  .postcard {
+    position: relative;
+    width: 540px; height: 720px;                 /* 逻辑 1080×1440 */
+    background: #FAF3E2;                          /* cream */
+    border: 1.5px solid rgba(218, 41, 28, 0.14); /* 外沿细边 */
+    overflow: hidden;
+    box-shadow: 0 14px 36px rgba(74, 59, 42, 0.22);
+  }
+  /* 照片区（AI 出图时整张铺满；本地兜底时风格化照片铺在上部区域） */
+  .photo {
+    position: absolute;
+    left: 22px; top: 22px;                        /* 逻辑 44,44 */
+    width: 496px; height: 518px;                  /* 逻辑 992×1036 */
+    border-radius: 15px;                          /* 逻辑 30px */
+    overflow: hidden;
+    border: 1.5px solid #EBE2CF;
+    background: url('photos/sample-photo.jpg') center/cover no-repeat, #F2EADA;
+  }
+  /* 漫记标题：白色手写体压在照片右上角，暖棕描边 + 柔和投影 */
+  .photo-title {
+    position: absolute;
+    right: 20px; top: 26px;
+    max-width: 76%;
+    font-family: "LXGW WenKai", "Xingkai SC", "Kaiti SC", "STKaiti", "KaiTi", serif;
+    font-size: 27px;                              /* 逻辑 54px */
+    color: #FFFFFF;
+    text-align: right;
+    -webkit-text-stroke: 2px rgba(88, 54, 18, 0.32);
+    text-shadow: 0 2px 6px rgba(45, 28, 10, 0.55);
+  }
+  /* 底部牛皮纸纸带 */
+  .band {
+    position: absolute;
+    left: 0; right: 0; top: 560px; height: 160px;   /* 逻辑 BAND_TOP=1120 */
+    background: linear-gradient(180deg, #F5EDD6 0%, #EADCB6 100%);
+  }
+  .band::before {                                   /* 上沿撕纸毛边 */
+    content: '';
+    position: absolute; left: 0; right: 0; top: -6px; height: 10px;
+    background: repeating-linear-gradient(115deg,
+      rgba(122, 92, 48, 0.10) 0 6px, transparent 6px 13px);
+  }
+  .band::after {                                    /* 纸带顶部柔和投影 */
+    content: '';
+    position: absolute; left: 0; right: 0; top: -9px; height: 9px;
+    background: linear-gradient(180deg, rgba(74, 52, 22, 0) 0%, rgba(74, 52, 22, 0.16) 100%);
+  }
+  /* 手写题字：完整不截断（长文案逐级缩字号 / 压行距，绝不丢字省略） */
+  .caption {
+    position: absolute;
+    left: 32px; top: 577px;                       /* 逻辑 64, CAPTION_TOP=1154 */
+    width: 400px;
+    font-family: "LXGW WenKai", "Xingkai SC", "Kaiti SC", "STKaiti", "KaiTi", serif;
+    font-size: 21px;                              /* 逻辑 42px，放不下按 38/34/30/26 降级 */
+    line-height: 1.34;
+    color: #453A2C;
+    white-space: pre-wrap;
+  }
+  /* 左下角日期落款 */
+  .date {
+    position: absolute;
+    left: 32px; bottom: 15px;                     /* 逻辑 POSTCARD_H-30 */
+    font-size: 12px;                              /* 逻辑 24px */
+    font-weight: 500;
+    color: #A79A82;
+  }
+  /* 右下角「麦乐记」字标：正片叠底，落在主图内部、纸带之上 */
+  .logo {
+    position: absolute;
+    right: 22px; bottom: 175px;                   /* 逻辑：底边距卡底 350px */
+    width: 105px;                                 /* 逻辑 210px */
+    mix-blend-mode: multiply;
+    opacity: 0.94;
+  }
+</style>
+</head>
+<body>
+  <div class="postcard">
+    <div class="photo">
+      <div class="photo-title">绿茵小英雄</div>
+    </div>
+    <div class="band"></div>
+    <div class="caption">你今天跑得又快又稳，和队友击掌时笑得最亮。这份巨无霸，是给小小前锋的奖励。</div>
+    <img class="logo" src="../assets/logo-wordmark.png" alt="麦乐记" />
+    <div class="date">2026.10.13 · 麦乐漫记</div>
+  </div>
+</body>
+</html>

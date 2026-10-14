@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>Happytime 贺卡 · 手绘绘本风</title>
+<style>
+  /* ======================================================================
+   * v4「Happytime 贺卡」模板（16:9，逻辑尺寸 1200×675，此处按 0.5 缩放显示）
+   * 对齐 app 内 src/part4/lib/happytime-card.ts 的 Canvas 合成规则：
+   *   · 背景 = 手绘绘本整图三选一（默认 bg-flower-frame），cover 铺满
+   *   · 中央暖白晕保证文字可读，不遮插画
+   *   · 标题 = 砖红 #c0281f，站酷快乐体，字距 0.12em，不描边（描边会粘笔画）
+   *   · 正文 = 黑墨 #3a352e，马善政楷体，紧跟标题下方，最多 3 行
+   *   · 关键词命中即染色（见文末脚本，色表与 app 一致）
+   *   · 圆角 38px（此处 19px）
+   * 打印/高清交付：把 .card 的 width/height 与字号整体 ×2 即 1200×675 原尺寸。
+   * ====================================================================== */
+  @font-face {
+    font-family: 'HappyKuaiLe';
+    src: url('../assets/fonts/ZCOOLKuaiLe.woff2') format('woff2');
+    font-display: swap;
+  }
+  @font-face {
+    font-family: 'HappyMaShan';
+    src: url('../assets/fonts/MaShanZheng.woff2') format('woff2');
+    font-display: swap;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    display: flex; align-items: center; justify-content: center;
+    background: #EFE6D4; padding: 24px; min-height: 100vh;
+    font-family: 'HappyMaShan', 'Kaiti SC', 'STKaiti', 'KaiTi', serif;
+  }
+  .card {
+    position: relative;
+    width: 600px; height: 338px;          /* 逻辑 1200×675 */
+    border-radius: 19px;                  /* 逻辑 38px */
+    overflow: hidden;
+    box-shadow: 0 12px 30px rgba(74, 59, 42, 0.22);
+    background: url('../assets/bg-flower-frame.jpg') center/cover no-repeat;
+  }
+  /* 中央暖白晕：文字区可读，边缘插画保持原样 */
+  .veil {
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 56% 70% at 50% 46%,
+      rgba(255,254,250,0.55) 0%, rgba(255,254,250,0.32) 55%, rgba(255,254,250,0) 100%);
+    pointer-events: none;
+  }
+  .content {
+    position: relative; height: 100%;
+    display: flex; flex-direction: column; align-items: center;
+  }
+  .title {
+    margin-top: 55px;                      /* 逻辑 titleY=158, 基线中部 */
+    font-family: 'HappyKuaiLe', 'Hannotate SC', 'Yuppi SC', 'Kaiti SC', serif;
+    font-size: 59px;                       /* 逻辑 118px，放不下由脚本缩字号（绝不截断） */
+    color: #c0281f;
+    letter-spacing: 0.12em;
+    text-indent: 0.12em;
+    white-space: nowrap;
+    transform: rotate(-0.6deg);             /* 轻微手写倾斜 */
+    max-width: 58%;                         /* 标题占画面宽约 58% */
+  }
+  .copy {
+    margin-top: 22px;                      /* 逻辑：标题下沿 + 44px */
+    width: 380px;                          /* 逻辑 1200-440 的正文区居中 */
+    font-size: 25px;                       /* 逻辑 50px（超 4 行时脚本降到 18px） */
+    line-height: 1.68;
+    color: #3a352e;
+    text-align: left;
+    transform: rotate(-0.6deg);
+    word-break: break-word;
+  }
+  /* 关键词彩色（透明柔和的儿童彩笔一档） */
+  .kw-yellow { color: #e0b93f; }
+  .kw-orange { color: #e2603c; }
+  .kw-blue   { color: #5b8fd9; }
+  .kw-purple { color: #8e6bc9; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="veil"></div>
+    <div class="content">
+      <div class="title">胜利击掌time</div>
+      <div class="copy" id="copy">汗水顺着刘海蹭花了小脸蛋。和队友拍红的掌心，装着满当当的开心。并肩往前冲的快乐，真的会加倍。</div>
+    </div>
+  </div>
+
+  <script>
+    /* 标题缩字号：与 app 一致——放不下就缩，绝不截断、绝不省略号 */
+    (function fitTitle() {
+      const t = document.querySelector('.title');
+      let size = 59;
+      while (t.scrollWidth > t.clientWidth && size > 20) {
+        size -= 2;
+        t.style.fontSize = size + 'px';
+      }
+    })();
+
+    /* 正文行数控制：超过 4 行降到逻辑 40px（显示 20px） */
+    (function fitCopy() {
+      const c = document.getElementById('copy');
+      if (!c) return;
+      const lh = parseFloat(getComputedStyle(c).lineHeight);
+      if (c.scrollHeight > lh * 4) c.style.fontSize = '20px';
+    })();
+
+    /* 关键词染色：色表与 src/part4/lib/happytime-card.ts 的 KEYWORD_COLORS 一致
+       （最长优先匹配）。改色表时两边同步。 */
+    const KEYWORD_COLORS = [
+      ['阳光','kw-yellow'],['耀眼','kw-orange'],['少年','kw-blue'],['飞奔','kw-blue'],
+      ['奔跑','kw-blue'],['勇敢','kw-orange'],['星星','kw-yellow'],['发光','kw-yellow'],
+      ['闪亮','kw-yellow'],['朋友','kw-blue'],['伙伴','kw-blue'],['击掌','kw-orange'],
+      ['得意','kw-yellow'],['微笑','kw-orange'],['彩虹','kw-purple'],['魔法','kw-purple'],
+      ['满格','kw-blue'],['升级','kw-orange'],['主角','kw-yellow'],['冒险','kw-blue'],
+      ['大笑','kw-yellow'],['拥抱','kw-orange'],['宝藏','kw-yellow'],['庆祝','kw-orange'],
+    ];
+    const el = document.getElementById('copy');
+    const text = el.textContent;
+    let html = '';
+    let i = 0;
+    outer: while (i < text.length) {
+      for (const [word, cls] of KEYWORD_COLORS) {
+        const seg = text.slice(i, i + word.length).toLowerCase();
+        if (seg === word.toLowerCase()) {
+          html += `<span class="${cls}">${text.slice(i, i + word.length)}</span>`;
+          i += word.length;
+          continue outer;
+        }
+      }
+      html += text[i];
+      i += 1;
+    }
+    el.innerHTML = html;
+  </script>
+</body>
+</html>
